@@ -9,6 +9,8 @@ import (
 	"sync"
 	"time"
 
+	"os"
+
 	"cloud.google.com/go/pubsub/v2"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
@@ -20,13 +22,21 @@ import (
 	"google.golang.org/grpc"
 )
 
-const (
-	projectID      = "datadog-ese-sandbox"
-	topicID        = "gustavo-ese-pubsub"
-	subscriptionID = "netpath"
+var (
+	projectID      = requireEnv("GCP_PROJECT_ID")
+	topicID        = requireEnv("GCP_PUBSUB_TOPIC_ID")
+	subscriptionID = requireEnv("GCP_PUBSUB_SUBSCRIPTION_ID")
 )
 
 var tracer = otel.Tracer("gonetpath")
+
+func requireEnv(key string) string {
+	v := os.Getenv(key)
+	if v == "" {
+		log.Fatalf("required environment variable %s is not set", key)
+	}
+	return v
+}
 
 func publishMessage(ctx context.Context, client *pubsub.Client, message string) (string, error) {
 	ctx, span := tracer.Start(ctx, "pubsub.publish",

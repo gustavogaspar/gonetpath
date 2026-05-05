@@ -1,0 +1,239 @@
+[34m
+* Datadog Agent 7 install script v1.45.0
+[0m
+/usr/bin/systemctl
+bash: line 1376: /etc/redhat-release: No such file or directory
+[34m
+* Installing YUM sources for Datadog
+[0m
+Cache was expired
+17 files removed
+Error: No matching Packages to list
+  [33mInstalling package(s): datadog-agent
+[0m
+Datadog, Inc.                                    11 kB/s | 905  B     00:00    
+Datadog, Inc.                                    93 kB/s | 1.7 kB     00:00    
+Importing GPG key 0xB01082D3:
+ Userid     : "Datadog, Inc. RPM key (2023-04-20) (RPM key) <package+rpmkey@datadoghq.com>"
+ Fingerprint: 7408 BFD5 6BC5 BF0C 361A AAE8 5D88 EEA3 B010 82D3
+ From       : https://keys.datadoghq.com/DATADOG_RPM_KEY_CURRENT.public
+Datadog, Inc.                                    86 kB/s | 1.7 kB     00:00    
+Importing GPG key 0x4F09D16B:
+ Userid     : "Datadog, Inc. RPM key (2024-05-15) (RPM key) <package+rpmkey@datadoghq.com>"
+ Fingerprint: 2416 A377 57B1 BB02 68B3 634B 52AF C599 4F09 D16B
+ From       : https://keys.datadoghq.com/DATADOG_RPM_KEY_4F09D16B.public
+Datadog, Inc.                                    88 kB/s | 1.7 kB     00:00    
+Importing GPG key 0xB01082D3:
+ Userid     : "Datadog, Inc. RPM key (2023-04-20) (RPM key) <package+rpmkey@datadoghq.com>"
+ Fingerprint: 7408 BFD5 6BC5 BF0C 361A AAE8 5D88 EEA3 B010 82D3
+ From       : https://keys.datadoghq.com/DATADOG_RPM_KEY_B01082D3.public
+Datadog, Inc.                                   128 kB/s | 2.4 kB     00:00    
+Importing GPG key 0xFD4BF915:
+ Userid     : "Datadog, Inc. RPM key (2020-09-08) <package+rpmkey@datadoghq.com>"
+ Fingerprint: C655 9B69 0CA8 82F0 23BD F3F6 3F4D 1729 FD4B F915
+ From       : https://keys.datadoghq.com/DATADOG_RPM_KEY_FD4BF915.public
+Datadog, Inc.                                    91 kB/s | 1.6 kB     00:00    
+Importing GPG key 0xE09422B3:
+ Userid     : "Datadog, Inc <package@datadoghq.com>"
+ Fingerprint: A4C0 B90D 7443 CF6E 4E8A A341 F106 8E14 E094 22B3
+ From       : https://keys.datadoghq.com/DATADOG_RPM_KEY_E09422B3.public
+Datadog, Inc.                                    75 MB/s |  45 MB     00:00    
+Last metadata expiration check: 0:00:13 ago on Tue May  5 14:21:37 2026.
+Dependencies resolved.
+================================================================================
+ Package               Architecture   Version             Repository       Size
+================================================================================
+Installing:
+ datadog-agent         x86_64         1:7.78.2-1          datadog         152 M
+
+Transaction Summary
+================================================================================
+Install  1 Package
+
+Total download size: 152 M
+Installed size: 152 M
+Downloading Packages:
+datadog-agent-7.78.2-1.x86_64.rpm                43 MB/s | 152 MB     00:03    
+--------------------------------------------------------------------------------
+Total                                            43 MB/s | 152 MB     00:03     
+Datadog, Inc.                                    89 kB/s | 1.7 kB     00:00    
+Importing GPG key 0xB01082D3:
+ Userid     : "Datadog, Inc. RPM key (2023-04-20) (RPM key) <package+rpmkey@datadoghq.com>"
+ Fingerprint: 7408 BFD5 6BC5 BF0C 361A AAE8 5D88 EEA3 B010 82D3
+ From       : https://keys.datadoghq.com/DATADOG_RPM_KEY_CURRENT.public
+Key imported successfully
+Datadog, Inc.                                    98 kB/s | 1.7 kB     00:00    
+Importing GPG key 0x4F09D16B:
+ Userid     : "Datadog, Inc. RPM key (2024-05-15) (RPM key) <package+rpmkey@datadoghq.com>"
+ Fingerprint: 2416 A377 57B1 BB02 68B3 634B 52AF C599 4F09 D16B
+ From       : https://keys.datadoghq.com/DATADOG_RPM_KEY_4F09D16B.public
+Key imported successfully
+Datadog, Inc.                                    91 kB/s | 1.7 kB     00:00    
+GPG key at https://keys.datadoghq.com/DATADOG_RPM_KEY_B01082D3.public (0xB01082D3) is already installed
+Datadog, Inc.                                   140 kB/s | 2.4 kB     00:00    
+Importing GPG key 0xFD4BF915:
+ Userid     : "Datadog, Inc. RPM key (2020-09-08) <package+rpmkey@datadoghq.com>"
+ Fingerprint: C655 9B69 0CA8 82F0 23BD F3F6 3F4D 1729 FD4B F915
+ From       : https://keys.datadoghq.com/DATADOG_RPM_KEY_FD4BF915.public
+Key imported successfully
+Datadog, Inc.                                    90 kB/s | 1.6 kB     00:00    
+Importing GPG key 0xE09422B3:
+ Userid     : "Datadog, Inc <package@datadoghq.com>"
+ Fingerprint: A4C0 B90D 7443 CF6E 4E8A A341 F106 8E14 E094 22B3
+ From       : https://keys.datadoghq.com/DATADOG_RPM_KEY_E09422B3.public
+Key imported successfully
+Running transaction check
+Transaction check succeeded.
+Running transaction test
+Transaction test succeeded.
+Running transaction
+  Preparing        :                                                        1/1 
+  Running scriptlet: datadog-agent-1:7.78.2-1.x86_64                        1/1 
+Failed to stop datadog-agent-process.service: Unit datadog-agent-process.service not loaded.
+Failed to stop datadog-agent-sysprobe.service: Unit datadog-agent-sysprobe.service not loaded.
+Failed to stop datadog-agent-trace.service: Unit datadog-agent-trace.service not loaded.
+Failed to stop datadog-agent-security.service: Unit datadog-agent-security.service not loaded.
+Failed to stop datadog-agent.service: Unit datadog-agent.service not loaded.
+Failed to disable unit: Unit file datadog-agent-process.service does not exist.
+Failed to disable unit: Unit file datadog-agent-sysprobe.service does not exist.
+Failed to disable unit: Unit file datadog-agent-trace.service does not exist.
+Failed to disable unit: Unit file datadog-agent-security.service does not exist.
+Failed to disable unit: Unit file datadog-agent.service does not exist.
+
+  Installing       : datadog-agent-1:7.78.2-1.x86_64                        1/1 
+  Running scriptlet: datadog-agent-1:7.78.2-1.x86_64                        1/1 
+Creating file: '/opt/datadog-agent/.post_python_installed_packages.txt'
+File '/opt/datadog-agent/.diff_python_installed_packages.txt' not found.
+
+  Verifying        : datadog-agent-1:7.78.2-1.x86_64                        1/1================================================================================
+WARNING:
+  A newer release of "Amazon Linux" is available.
+
+  Available Versions:
+
+  Version 2023.10.20260105:
+    Run the following command to upgrade to 2023.10.20260105:
+
+      dnf upgrade --releasever=2023.10.20260105
+
+    Release notes:
+     https://docs.aws.amazon.com/linux/al2023/release-notes/relnotes-2023.10.20260105.html
+
+  Version 2023.10.20260120:
+    Run the following command to upgrade to 2023.10.20260120:
+
+      dnf upgrade --releasever=2023.10.20260120
+
+    Release notes:
+     https://docs.aws.amazon.com/linux/al2023/release-notes/relnotes-2023.10.20260120.html
+
+  Version 2023.10.20260202:
+    Run the following command to upgrade to 2023.10.20260202:
+
+      dnf upgrade --releasever=2023.10.20260202
+
+    Release notes:
+     https://docs.aws.amazon.com/linux/al2023/release-notes/relnotes-2023.10.20260202.html
+
+  Version 2023.10.20260216:
+    Run the following command to upgrade to 2023.10.20260216:
+
+      dnf upgrade --releasever=2023.10.20260216
+
+    Release notes:
+     https://docs.aws.amazon.com/linux/al2023/release-notes/relnotes-2023.10.20260216.html
+
+  Version 2023.10.20260302:
+    Run the following command to upgrade to 2023.10.20260302:
+
+      dnf upgrade --releasever=2023.10.20260302
+
+    Release notes:
+     https://docs.aws.amazon.com/linux/al2023/release-notes/relnotes-2023.10.20260302.html
+
+  Version 2023.10.20260325:
+    Run the following command to upgrade to 2023.10.20260325:
+
+      dnf upgrade --releasever=2023.10.20260325
+
+    Release notes:
+     https://docs.aws.amazon.com/linux/al2023/release-notes/relnotes-2023.10.20260325.html
+
+  Version 2023.10.20260330:
+    Run the following command to upgrade to 2023.10.20260330:
+
+      dnf upgrade --releasever=2023.10.20260330
+
+    Release notes:
+     https://docs.aws.amazon.com/linux/al2023/release-notes/relnotes-2023.10.20260330.html
+
+  Version 2023.11.20260406:
+    Run the following command to upgrade to 2023.11.20260406:
+
+      dnf upgrade --releasever=2023.11.20260406
+
+    Release notes:
+     https://docs.aws.amazon.com/linux/al2023/release-notes/relnotes-2023.11.20260406.html
+
+  Version 2023.11.20260413:
+    Run the following command to upgrade to 2023.11.20260413:
+
+      dnf upgrade --releasever=2023.11.20260413
+
+    Release notes:
+     https://docs.aws.amazon.com/linux/al2023/release-notes/relnotes-2023.11.20260413.html
+
+  Version 2023.11.20260427:
+    Run the following command to upgrade to 2023.11.20260427:
+
+      dnf upgrade --releasever=2023.11.20260427
+
+    Release notes:
+     https://docs.aws.amazon.com/linux/al2023/release-notes/relnotes-2023.11.20260427.html
+
+  Version 2023.11.20260505:
+    Run the following command to upgrade to 2023.11.20260505:
+
+      dnf upgrade --releasever=2023.11.20260505
+
+    Release notes:
+     https://docs.aws.amazon.com/linux/al2023/release-notes/relnotes-2023.11.20260505.html
+
+  Version 2023.9.20251208:
+    Run the following command to upgrade to 2023.9.20251208:
+
+      dnf upgrade --releasever=2023.9.20251208
+
+    Release notes:
+     https://docs.aws.amazon.com/linux/al2023/release-notes/relnotes-2023.9.20251208.html
+
+================================================================================
+ 
+
+Installed:
+  datadog-agent-1:7.78.2-1.x86_64                                               
+
+Complete!
+[34m
+* Adding your API key to the Datadog Agent configuration: /etc/datadog-agent/datadog.yaml
+[0m
+[34m
+* Setting SITE in the Datadog Agent configuration: /etc/datadog-agent/datadog.yaml
+[0m
+/usr/bin/systemctl
+[34m* Starting the Datadog Agent...
+[0m
+[32m  Your Datadog Agent is running and functioning properly.
+[0m[32m  It will continue to run in the background and submit metrics to Datadog.
+[0m[32m  If you ever want to stop the Datadog Agent, run:
+
+      sudo systemctl stop datadog-agent
+
+  And to run it again run:
+
+      sudo systemctl start datadog-agent[0m
+
+[32m  Consider adding dd-agent to the docker group to enable the docker support, run:
+
+      sudo usermod -a -G docker dd-agent[0m
+

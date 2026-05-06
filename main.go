@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"sync"
 	"time"
 
 	"os"
 
 	"cloud.google.com/go/pubsub/v2"
+	pubsubapi "cloud.google.com/go/pubsub/v2/apiv1"
+	"cloud.google.com/go/pubsub/v2/apiv1/pubsubpb"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
@@ -20,6 +21,8 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/api/option"
 	"google.golang.org/grpc"
+	gcodes "google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 var (
@@ -68,11 +71,14 @@ func publishMessage(ctx context.Context, client *pubsub.Client, message string) 
 	return msgID, nil
 }
 
-func pullMessages(ctx context.Context, client *pubsub.Client, maxMessages int) ([]string, error) {
+func pullMessages(ctx context.Context, admin *pubsubapi.SubscriptionAdminClient, batchSize int) ([]string, error) {
 	ctx, span := tracer.Start(ctx, "pubsub.pull",
 		trace.WithSpanKind(trace.SpanKindConsumer),
 	)
 	defer span.End()
+
+	subscriptionPath := fmt.Sprintf("projects/%s/subscriptions/%s", projectID, subscriptionID)
+
 	span.SetAttributes(
 		attribute.String("peer.service", "google-cloud-pubsub"),
 		attribute.String("server.address", "pubsub.googleapis.com"),
@@ -81,34 +87,89 @@ func pullMessages(ctx context.Context, client *pubsub.Client, maxMessages int) (
 		attribute.String("messaging.operation.name", "receive"),
 	)
 
-	sub := client.Subscriber(subscriptionID)
+	drainCtx, drainCancel := context.WithTimeout(ctx, 30*time.Second)
+	defer drainCancel()
 
 	var (
-		mu       sync.Mutex
 		messages []string
+		batches  int
 	)
 
-	cctx, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
-
-	err := sub.Receive(cctx, func(ctx context.Context, msg *pubsub.Message) {
-		msg.Ack()
-		mu.Lock()
-		messages = append(messages, string(msg.Data))
-		if len(messages) >= maxMessages {
-			cancel()
+	for drainCtx.Err() == nil {
+		pullCtx, pullCancel := context.WithTimeout(drainCtx, 5*time.Second)
+		resp, err := admin.Pull(pullCtx, &pubsubpb.PullRequest{
+			Subscription: subscriptionPath,
+			MaxMessages:  int32(batchSize),
+		})
+		pullCancel()
+		if err != nil {
+			// A per-call deadline with no messages means the subscription is drained.
+			if status.Code(err) == gcodes.DeadlineExceeded {
+				break
+			}
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
+			return messages, err
 		}
-		mu.Unlock()
-	})
 
-	if err != nil && err != context.DeadlineExceeded && err != context.Canceled {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
-		return nil, err
+		received := resp.GetReceivedMessages()
+		if len(received) == 0 {
+			break
+		}
+
+		batches++
+		ackIDs := make([]string, 0, len(received))
+		for _, rm := range received {
+			if m := rm.GetMessage(); m != nil {
+				messages = append(messages, string(m.GetData()))
+			}
+			if id := rm.GetAckId(); id != "" {
+				ackIDs = append(ackIDs, id)
+			}
+		}
+
+		if len(ackIDs) > 0 {
+			if err := acknowledgeMessages(ctx, admin, subscriptionPath, ackIDs); err != nil {
+				span.RecordError(err)
+				span.SetStatus(codes.Error, err.Error())
+				return messages, err
+			}
+		}
 	}
 
-	span.SetAttributes(attribute.Int("messaging.batch.message_count", len(messages)))
+	span.SetAttributes(
+		attribute.Int("messaging.batch.message_count", len(messages)),
+		attribute.Int("pubsub.pull.batches", batches),
+	)
 	return messages, nil
+}
+
+func acknowledgeMessages(ctx context.Context, admin *pubsubapi.SubscriptionAdminClient, subscriptionPath string, ackIDs []string) error {
+	ctx, span := tracer.Start(ctx, "pubsub.ack",
+		trace.WithSpanKind(trace.SpanKindClient),
+	)
+	defer span.End()
+	span.SetAttributes(
+		attribute.String("peer.service", "google-cloud-pubsub"),
+		attribute.String("server.address", "pubsub.googleapis.com"),
+		attribute.String("messaging.system", "gcp_pubsub"),
+		attribute.String("messaging.destination.name", subscriptionID),
+		attribute.String("messaging.operation.name", "ack"),
+		attribute.Int("messaging.batch.message_count", len(ackIDs)),
+	)
+
+	ackCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	if err := admin.Acknowledge(ackCtx, &pubsubpb.AcknowledgeRequest{
+		Subscription: subscriptionPath,
+		AckIds:       ackIDs,
+	}); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return err
+	}
+	return nil
 }
 
 func main() {
@@ -127,6 +188,14 @@ func main() {
 		log.Fatalf("failed to create pubsub client: %v", err)
 	}
 	defer client.Close()
+
+	adminClient, err := pubsubapi.NewSubscriptionAdminClient(ctx,
+		option.WithGRPCDialOption(grpc.WithStatsHandler(otelgrpc.NewClientHandler())),
+	)
+	if err != nil {
+		log.Fatalf("failed to create pubsub subscription admin client: %v", err)
+	}
+	defer adminClient.Close()
 
 	mux := http.NewServeMux()
 
@@ -165,7 +234,7 @@ func main() {
 			return
 		}
 
-		messages, err := pullMessages(r.Context(), client, 10)
+		messages, err := pullMessages(r.Context(), adminClient, 10)
 		if err != nil {
 			log.Printf("failed to pull messages: %v", err)
 			http.Error(w, "failed to pull messages", http.StatusInternalServerError)

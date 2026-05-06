@@ -29,6 +29,8 @@ var (
 	projectID      = requireEnv("GCP_PROJECT_ID")
 	topicID        = requireEnv("GCP_PUBSUB_TOPIC_ID")
 	subscriptionID = requireEnv("GCP_PUBSUB_SUBSCRIPTION_ID")
+	// Defaults to GCP us-east4 (Ashburn, VA), the region co-located with AWS us-east-1.
+	pubsubEndpoint = envOr("GCP_PUBSUB_ENDPOINT", "us-east4-pubsub.googleapis.com:443")
 )
 
 var tracer = otel.Tracer("gonetpath")
@@ -39,6 +41,13 @@ func requireEnv(key string) string {
 		log.Fatalf("required environment variable %s is not set", key)
 	}
 	return v
+}
+
+func envOr(key, fallback string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return fallback
 }
 
 func publishMessage(ctx context.Context, client *pubsub.Client, message string) (string, error) {
@@ -181,7 +190,10 @@ func main() {
 	}
 	defer shutdown(ctx)
 
+	log.Printf("using pubsub endpoint: %s", pubsubEndpoint)
+
 	client, err := pubsub.NewClient(ctx, projectID,
+		option.WithEndpoint(pubsubEndpoint),
 		option.WithGRPCDialOption(grpc.WithStatsHandler(otelgrpc.NewClientHandler())),
 	)
 	if err != nil {
@@ -190,6 +202,7 @@ func main() {
 	defer client.Close()
 
 	adminClient, err := pubsubapi.NewSubscriptionAdminClient(ctx,
+		option.WithEndpoint(pubsubEndpoint),
 		option.WithGRPCDialOption(grpc.WithStatsHandler(otelgrpc.NewClientHandler())),
 	)
 	if err != nil {
